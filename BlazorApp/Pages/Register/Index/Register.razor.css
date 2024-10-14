@@ -1,0 +1,24 @@
+
+    .card-body {
+        display: grid;
+        grid-template-columns: 3fr auto;
+        gap: 1rem;
+    }
+
+    .form-group {
+        grid-template-columns: 3fr auto;
+    }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  label {
+    flex: 0 0 auto; 
+  }
+
+  .form-control {
+    width: 100%;
+  }

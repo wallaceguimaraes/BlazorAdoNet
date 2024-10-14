@@ -1,0 +1,84 @@
+@page "/projects/create"
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+
+<h1>Cadastrar Projeto</h1>
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error</p>
+    </div>
+}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Preencha as informações do projeto</h5>
+        <EditForm Model="projectModel" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="title">Título do Projeto</label>
+                <InputText Id="title" class="form-control" @bind-Value="projectModel.Title" />
+                <ValidationMessage For="@(() => projectModel.Title)" />
+            </div>
+
+            <div class="form-group">
+                <label for="creationDate">Data de Criação</label>
+                <InputDate Id="creationDate" class="form-control" @bind-Value="projectModel.CreatedAt" />
+                <ValidationMessage For="@(() => projectModel.CreatedAt)" />
+            </div>
+
+            <div class="form-group">
+                <label for="completionDate">Data de Conclusão</label>
+                <InputDate Id="completionDate" class="form-control" @bind-Value="projectModel.FinishedAt" />
+                <ValidationMessage For="@(() => projectModel.FinishedAt)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancelar</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ProjectModel projectModel = new ProjectModel();
+    private ErrorConverter errorConverter = new ErrorConverter();
+    private bool ShowErrors;
+    private string Error = "";
+
+    protected override void OnInitialized()
+    {
+        projectModel.CreatedAt = DateTime.Now;
+        projectModel.FinishedAt = projectModel.CreatedAt.AddDays(1);
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowErrors = false;
+
+        var result = await ProjectService.AddProject(projectModel);
+
+        if (result.Successful)
+        {
+            NavigationManager.NavigateTo("/projects");
+        }
+        else
+        {
+            Error = errorConverter.MapError(result.Error);
+            ShowErrors = true;
+        }
+    }
+
+    private void ValidateDate() {
+        if (projectModel.CreatedAt > projectModel.FinishedAt)
+        {
+            Error = errorConverter.MapError("INVALID_DATE");
+            ShowErrors = true;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/projetos");
+    }
+}

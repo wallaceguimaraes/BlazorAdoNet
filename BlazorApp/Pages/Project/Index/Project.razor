@@ -1,0 +1,121 @@
+@page "/projects"
+@using BlazorApp.Models
+@using BlazorApp.Models.Results.Project
+@using BlazorApp.Models.ViewModels.Project
+@using BlazorApp.Services.Project
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+
+<h1>Projetos</h1>
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Error</p>
+    </div>
+}
+<div class="search-container mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" @bind="findProjectModel.Title" placeholder="Buscar por título" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <input type="date" @bind="findProjectModel.CreatedAt" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100" @onclick="SearchProjects">Buscar</button>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success w-100" @onclick="CreateNewProject">Novo</button>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Data de Criação</th>
+            <th>Data de Conclusão</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (projects == null || projects.Count == 0)
+        {
+            <tr>
+                <td colspan="4" class="text-center">
+                    <div class="alert alert-warning">Nenhum projeto encontrado.</div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var project in projects)
+            {
+                <tr>
+                    <td>@project.Title</td>
+                    <td>@project.CreatedAt.ToShortDateString()</td>
+                    <td>@project.FinishedAt?.ToShortDateString()</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="() => EditProject(project.Id)">Editar</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteProject(project.Id)">Excluir</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<PaginationComponent TotalCount="totalCount" CurrentPage="currentPage" OnPageChanged="LoadProjects" />
+
+@code {
+    private List<ProjectResult> projects;
+    private FindProjectModel findProjectModel;
+    private int totalCount;
+    private ErrorConverter errorConverter = new ErrorConverter();
+    private bool ShowErrors;
+    private string Error = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        findProjectModel = new FindProjectModel();
+        findProjectModel.CreatedAt = DateTime.Now;
+        await LoadProjects();
+    }
+
+    private async Task LoadProjects()
+    {
+        projects = await ProjectService.GetProjects(findProjectModel);
+        totalCount = projects.Count;
+    }
+
+    private async Task SearchProjects()
+    {
+        findProjectModel.CurrentPage = 1;
+        await LoadProjects();
+    }
+
+    private void EditProject(long projectId)
+    {
+        NavigationManager.NavigateTo($"/projects/edit/{projectId}");
+    }
+
+    private async Task DeleteProject(long projectId)
+    {
+        var result = await ProjectService.DeleteProject(projectId);
+        if (result.Successful)
+        {
+            await LoadProjects();
+        }
+        else
+        {
+            Error = errorConverter.MapError(result.Error);
+            ShowErrors = true;
+        }
+    }
+
+    private void CreateNewProject()
+    {
+        NavigationManager.NavigateTo("/projects/create");
+    }
+}
