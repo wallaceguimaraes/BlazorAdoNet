@@ -8,16 +8,18 @@ namespace WebApi.Services.Users
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository userRepository;
+        private readonly IUserRepository _userRepository;
         private const string CREATE_USER_ERROR = "CREATE_USER_ERROR";
         private const string USER_ALREADY_CREATED = "USER_ALREADY_CREATED";
         private const string USER_NOT_FOUND = "USER_NOT_FOUND";
+        private const string AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR";
+
 
 
         public UserService(IUserRepository unitOfWork
         )
         {
-            userRepository = unitOfWork;
+            _userRepository = unitOfWork;
         }
 
         public async Task<(User? user, string? error)> Create(UserRegisterModel model)
@@ -30,10 +32,10 @@ namespace WebApi.Services.Users
                 string passwordEncrypt = model.Password.Encrypt(salt);
                 user = model.Map(salt, passwordEncrypt);
 
-                if(await userRepository.GetUserByEmail(model.Email) != null)
+                if(await _userRepository.GetUserByEmail(model.Email) != null)
                     return (null, USER_ALREADY_CREATED);
                 
-                await userRepository.AddUser(user);
+                await _userRepository.AddUser(user);
             }
             catch (Exception){
                 //create error exception log here
@@ -47,7 +49,7 @@ namespace WebApi.Services.Users
         {
             try
             {
-                var user = await userRepository.GetUserById(userId);
+                var user = await _userRepository.GetUserById(userId);
                 return (user, null);
             }
             catch (Exception)
@@ -56,5 +58,21 @@ namespace WebApi.Services.Users
             }
         }
 
+        public async Task<(User? user, string? error)> FindUserAuthenticated(long userId, string salt)
+        {
+            try
+            {
+              var (user, error) = await _userRepository.FindUserAuthenticated(userId, salt);
+
+                if (!string.IsNullOrEmpty(error))
+                    return (null, error);
+                
+                return (user, error);
+            }
+            catch (Exception)
+            {
+                return (null, AUTHENTICATION_ERROR);
+            }
+        }
     }
 }

@@ -53,7 +53,7 @@ namespace AuthenticationApp.Controllers
         [HttpPost("wake-up")]
         public async Task<IActionResult> WakeUp()
         {
-            return Ok();
+            return Ok("Server online!");
         }
     }
 }

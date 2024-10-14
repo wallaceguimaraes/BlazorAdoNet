@@ -34,6 +34,8 @@ namespace BlazorApp.Models.Results.Errors
                     return "Ocorreu erro ao tentar obter dados do projeto!";
                 case "UPDATE_PROJECT_ERROR":
                     return "Ocorreu um erro ao tentar atualizar o registro!";
+                case "UNAUTHORIZED":
+                    return "Acesso não autorizado!";
             }
 
             return "Ocorreu algum erro!";

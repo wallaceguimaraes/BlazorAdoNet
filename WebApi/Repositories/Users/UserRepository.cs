@@ -184,5 +184,51 @@ public class UserRepository : IUserRepository
             return user;
         }
 
+        public async Task<(User user, string error)> FindUserAuthenticated(long userId, string salt)
+        {
+            User user = null;
+            string error = null;
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var query = "SELECT * FROM Usuarios WHERE Id = @UserId AND Salt = @Salt";
+
+                    using (var command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserId", userId);
+                        command.Parameters.AddWithValue("@Salt", salt);
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                user = new User
+                                {
+                                    Id = reader.GetInt64(reader.GetOrdinal("Id")),
+                                    Name = reader.GetString(reader.GetOrdinal("Nome")),
+                                    Email = reader.GetString(reader.GetOrdinal("Email")),
+                                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("DataCriacao"))
+                                };
+                            }
+                            else
+                            {
+                                error = "Usuário não encontrado ou salt inválido.";
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    error = $"Erro ao buscar o usuário: {ex.Message}";
+                }
+            }
+
+            return (user, error);
+        }
+
     }
 }

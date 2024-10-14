@@ -4,24 +4,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Threading.Tasks;
+using WebApi.Extensions.Identity;
+using WebApi.Services.Users;
 
 namespace WebApi.Authorization
 {
     public class AuthAttribute : ActionFilterAttribute
     {
-        private string _scope;
-        private bool _requiredSecret;
 
         public AuthAttribute() { }
 
-        public AuthAttribute(string scope = null, bool requiredSecret = false, bool webhookSecret = false, bool requiredSuperAdmin = false)
-        {
-            _scope = scope;
-            _requiredSecret = requiredSecret;
-        }
-
         public override async Task OnActionExecutionAsync(ActionExecutingContext actionContext, ActionExecutionDelegate next)
         {
+            var userService = actionContext.HttpContext.RequestServices.GetService<IUserService>();
+            
+            var claims = actionContext.HttpContext.User.Claims;
+            var (user, error) = await userService.FindUserAuthenticated(claims.UserId(), claims.Salt());
+
+            if (user == null || !string.IsNullOrEmpty(error))
+            {
+                actionContext.Result = new StatusCodeResult((int)HttpStatusCode.Unauthorized);
+                return;
+            }
+
+            await next();
         }
     }
 }

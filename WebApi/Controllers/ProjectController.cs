@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Authorization;
 using WebApi.Extensions.Identity;
 using WebApi.Models.ViewModel;
 using WebApi.Models.ViewModel.Projects;
@@ -23,7 +24,7 @@ namespace WebApi.Controllers
             _projectService = projectService;
         }
 
-        [HttpPost("create")]
+        [HttpPost("create"), Auth]
         public async Task<IActionResult> CreateProject([FromBody] ProjectRegisterModel model)
         {
             var userId = HttpContext.User.Claims.UserId();
@@ -36,7 +37,7 @@ namespace WebApi.Controllers
             return Ok();
         }
 
-        [HttpPost("list")]
+        [HttpPost("list"), Auth]
         public async Task<IActionResult> GetUsers([FromBody] FindProjectModel model)
         {
             var userId = HttpContext.User.Claims.UserId();
@@ -49,7 +50,7 @@ namespace WebApi.Controllers
             return Ok(projects);
         }
 
-        [HttpGet, Route("{projectId}") ]
+        [HttpGet, Route("{projectId}"), Auth]
         public async Task<IActionResult> GetProjectById([FromRoute] long projectId)
         {
             var userId = HttpContext.User.Claims.UserId();
@@ -62,7 +63,7 @@ namespace WebApi.Controllers
             return Ok(project);
         }
 
-        [HttpPut, Route("update/{projectId}")]
+        [HttpPut, Route("update/{projectId}"), Auth]
         public async Task<IActionResult> UpdateProject([FromRoute] long projectId, [FromBody] ProjectUpdateModel model)
         {
             var userId = HttpContext.User.Claims.UserId();
@@ -75,7 +76,7 @@ namespace WebApi.Controllers
             return Ok();
         }
 
-        [HttpDelete, Route("delete/{projectId}")]
+        [HttpDelete, Route("delete/{projectId}"), Auth]
         public async Task<IActionResult> DeleteProject([FromRoute] long projectId)
         {
             var userId = HttpContext.User.Claims.UserId();

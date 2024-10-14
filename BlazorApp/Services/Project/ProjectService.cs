@@ -58,6 +58,13 @@ namespace BlazorApp.Services.Project
                     result.Error = unprocessableEntity.Error;
 
                     break;
+
+                case HttpStatusCode.Unauthorized:
+
+                    result.Successful = false;
+                    result.Error = "UNAUTHORIZED";
+
+                    break;
             }
 
             return result;
@@ -122,6 +129,12 @@ namespace BlazorApp.Services.Project
                     result.Error = unprocessableEntity.Error;
 
                     break;
+                case HttpStatusCode.Unauthorized:
+
+                    result.Successful = false;
+                    result.Error = "UNAUTHORIZED";
+
+                    break;
             }
 
             return result;
@@ -142,7 +155,7 @@ namespace BlazorApp.Services.Project
                     PropertyNameCaseInsensitive = true
                 });
             }
-            
+
             return null;
         }
 
@@ -171,6 +184,13 @@ namespace BlazorApp.Services.Project
 
                     result.Successful = false;
                     result.Error = unprocessableEntity.Error;
+
+                    break;
+
+                case HttpStatusCode.Unauthorized:
+
+                    result.Successful = false;
+                    result.Error = "UNAUTHORIZED";
 
                     break;
             }

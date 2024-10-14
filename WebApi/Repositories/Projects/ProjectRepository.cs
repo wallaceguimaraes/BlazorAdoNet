@@ -148,7 +148,7 @@ namespace WebApi.Repositories.Projects
                     query.Append(" AND Titulo LIKE @Title");
                 
                 if (model.CreatedAt.HasValue)
-                    query.Append(" AND DataCriacao >= @CreatedAt");
+                    query.Append(" AND DataCriacao <= @CreatedAt");
 
                 using (var command = new MySqlCommand(query.ToString(), connection))
                 {
